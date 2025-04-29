@@ -6,8 +6,9 @@ use bevy::{
     prelude::*,
     render::mesh::SphereKind,
 };
-use rand::{distributions::Distribution, SeedableRng};
+use rand::{SeedableRng};
 use rand_chacha::ChaCha8Rng;
+use rand::distr::Distribution;
 
 fn main() {
     App::new()

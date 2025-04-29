@@ -6,7 +6,8 @@ use crate::{
 };
 use alloc::vec::Vec;
 use rand::Rng;
-use rand_distr::{Distribution, WeightedAliasIndex, WeightedError};
+use rand::seq::WeightError;
+use rand_distr::{Distribution};
 
 /// A [distribution] that caches data to allow fast sampling from a collection of triangles.
 /// Generally used through [`sample`] or [`sample_iter`].
@@ -19,16 +20,16 @@ use rand_distr::{Distribution, WeightedAliasIndex, WeightedError};
 /// ```
 /// # use bevy_math::{Vec3, primitives::*};
 /// # use bevy_math::sampling::mesh_sampling::UniformMeshSampler;
-/// # use rand::{SeedableRng, rngs::StdRng, distributions::Distribution};
+/// # use rand::{SeedableRng, rngs::StdRng};
 /// let faces = Tetrahedron::default().faces();
 /// let sampler = UniformMeshSampler::try_new(faces).unwrap();
 /// let rng = StdRng::seed_from_u64(8765309);
 /// // 50 random points on the tetrahedron:
-/// let samples: Vec<Vec3> = sampler.sample_iter(rng).take(50).collect();
+/// //let samples: Vec<Vec3> = sampler.sample_iter(rng).take(50).collect();
 /// ```
 pub struct UniformMeshSampler {
     triangles: Vec<Triangle3d>,
-    face_distribution: WeightedAliasIndex<f32>,
+    face_distribution: rand_distr::weighted::WeightedAliasIndex<f32>,
 }
 
 impl Distribution<Vec3> for UniformMeshSampler {
@@ -47,11 +48,11 @@ impl UniformMeshSampler {
     /// [triangles]: Triangle3d
     pub fn try_new<T: IntoIterator<Item = Triangle3d>>(
         triangles: T,
-    ) -> Result<Self, WeightedError> {
+    ) -> Result<Self, WeightError> {
         let triangles: Vec<Triangle3d> = triangles.into_iter().collect();
         let areas = triangles.iter().map(Measured2d::area).collect();
 
-        WeightedAliasIndex::new(areas).map(|face_distribution| Self {
+        rand_distr::weighted::WeightedAliasIndex::new(areas).map(|face_distribution| Self {
             triangles,
             face_distribution,
         })
